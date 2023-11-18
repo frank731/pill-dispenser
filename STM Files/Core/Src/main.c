@@ -19,7 +19,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "tim.h"
-#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -34,27 +33,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define LED_PORT GPIOA
-#define LED_PIN GPIO_PIN_5
-#define SW_PORT GPIOC
-#define SW_PIN GPIO_PIN_13
-#define BUZ_PORT GPIOC
-#define BUZ_PIN GPIO_PIN_0
-
-#define RS_Pin GPIO_PIN_6
-#define RS_GPIO_Port GPIOB
-#define RW_Pin GPIO_PIN_7
-#define RW_GPIO_Port GPIOB
-#define EN_Pin GPIO_PIN_5
-#define EN_GPIO_Port GPIOB
-#define D4_Pin GPIO_PIN_4
-#define D4_GPIO_Port GPIOB
-#define D5_Pin GPIO_PIN_3
-#define D5_GPIO_Port GPIOB
-#define D6_Pin GPIO_PIN_2
-#define D6_GPIO_Port GPIOB
-#define D7_Pin GPIO_PIN_1
-#define D7_GPIO_Port GPIOB
 
 /* USER CODE END PD */
 
@@ -108,15 +86,14 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART2_UART_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   Lcd_PortType ports[] = { D4_GPIO_Port, D5_GPIO_Port, D6_GPIO_Port, D7_GPIO_Port };
-	Lcd_PinType pins[] = {D4_Pin, D5_Pin, D6_Pin, D7_Pin};
-	Lcd_HandleTypeDef lcd;
-	lcd = Lcd_create(ports, pins, RS_GPIO_Port, RS_Pin, EN_GPIO_Port, EN_Pin, LCD_4_BIT_MODE);
-	Lcd_cursor(&lcd, 0,1);
-	Lcd_string(&lcd, "i love 198");
+  Lcd_PinType pins[] = {D4_Pin, D5_Pin, D6_Pin, D7_Pin};
+  Lcd_HandleTypeDef lcd;
+  lcd = Lcd_create(ports, pins, RS_GPIO_Port, RS_Pin, EN_GPIO_Port, EN_Pin, LCD_4_BIT_MODE);
+  Lcd_cursor(&lcd, 0,1);
+  Lcd_string(&lcd, "Pill Dispenser!");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -126,13 +103,16 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  if(HAL_GPIO_ReadPin(SW_PORT, SW_PIN) == GPIO_PIN_RESET){
-		  HAL_GPIO_WritePin(BUZ_PORT, BUZ_PIN, GPIO_PIN_SET);
-		  HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_SET);
+	  //
+	  if((HAL_GPIO_ReadPin(Rightmost_Button_GPIO_Port, Rightmost_Button_Pin) == GPIO_PIN_RESET) ||
+			  (HAL_GPIO_ReadPin(Right_Button_GPIO_Port, Right_Button_Pin) == GPIO_PIN_RESET) ||
+			  (HAL_GPIO_ReadPin(Left_Button_GPIO_Port, Left_Button_Pin) == GPIO_PIN_RESET)){
+		  //HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET);
+		  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 	  }
 	  else{
-		  HAL_GPIO_WritePin(BUZ_PORT, BUZ_PIN, GPIO_PIN_RESET);
-		  HAL_GPIO_WritePin(LED_PORT, LED_PIN, GPIO_PIN_RESET);
+		  //HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 	  }
   }
   /* USER CODE END 3 */
