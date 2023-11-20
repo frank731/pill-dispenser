@@ -55,6 +55,32 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+struct Button {
+	GPIO_TypeDef* port;
+	uint16_t pin;
+	uint32_t time_pressed;
+	int state;
+};
+
+// Function to convert minutes to 24-hour time format and return as a string
+char* convertTo24HourFormat(int minutes) {
+    int hours = minutes / 60;
+    int mins = minutes % 60;
+
+    // Allocate memory for the result string
+    char* result = (char*)malloc(6); // HH:MM\0
+
+    // Check if memory allocation was successful
+    if (result == NULL) {
+        printf("Memory allocation failed.\n");
+        exit(1); // Exit with an error code
+    }
+
+    // Format the result string
+    sprintf(result, "%02d:%02d", hours, mins);
+
+    return result;
+}
 
 /* USER CODE END 0 */
 
@@ -88,12 +114,31 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+  unsigned int pill_count = 0;
+  unsigned int dispense_time = 0;
+  unsigned int input_state = 0;
+
   Lcd_PortType ports[] = { D4_GPIO_Port, D5_GPIO_Port, D6_GPIO_Port, D7_GPIO_Port };
   Lcd_PinType pins[] = {D4_Pin, D5_Pin, D6_Pin, D7_Pin};
   Lcd_HandleTypeDef lcd;
   lcd = Lcd_create(ports, pins, RS_GPIO_Port, RS_Pin, EN_GPIO_Port, EN_Pin, LCD_4_BIT_MODE);
-  Lcd_cursor(&lcd, 0,1);
-  Lcd_string(&lcd, "Pill Dispenser!");
+  Lcd_cursor(&lcd, 0, 1);
+  Lcd_string(&lcd, "# to dispense:");
+  Lcd_cursor(&lcd, 1, 7);
+  Lcd_int(&lcd, pill_count);
+
+  struct Button buttons[3];
+  buttons[0].port = Left_Button_GPIO_Port;
+  buttons[0].pin = Left_Button_Pin;
+  buttons[1].port = Right_Button_GPIO_Port;
+  buttons[1].pin = Right_Button_Pin;
+  buttons[2].port = Rightmost_Button_GPIO_Port;
+  buttons[2].pin = Rightmost_Button_Pin;
+  for (int i = 0; i < 3; i++){
+	  buttons[i].time_pressed = 0;
+	  buttons[i].state = GPIO_PIN_SET;
+  }
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -103,7 +148,60 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  //
+	  for (int i = 0; i < 3; i++){
+		  if(HAL_GPIO_ReadPin(buttons[i].port, buttons[i].pin) == GPIO_PIN_RESET){
+			  if(buttons[i].state == GPIO_PIN_SET){
+				  buttons[i].time_pressed = HAL_GetTick();
+				  buttons[i].state = GPIO_PIN_RESET;
+			  }
+		  }
+		  else{
+			  if(buttons[i].state == GPIO_PIN_RESET){
+				  if(HAL_GetTick() - buttons[i].time_pressed < 750){ //held less than 3 seconds
+					  if(input_state == 0){
+						  if(i == 0){
+							  if(pill_count == 10){
+								  Lcd_cursor(&lcd, 1, 8);
+								  Lcd_string(&lcd, " ");
+							  }
+							  if(pill_count > 0) pill_count--;
+							  Lcd_cursor(&lcd, 1, 7);
+							  Lcd_int(&lcd, pill_count);
+						  }
+						  else if(i == 1){
+							  if(pill_count < 10) pill_count++;
+							  Lcd_cursor(&lcd, 1, 7);
+							  Lcd_int(&lcd, pill_count);
+						  }
+					  }
+					  else if(input_state == 1){
+						  if(i == 0){
+							  if(dispense_time > 0) dispense_time -= 30;
+							  Lcd_cursor(&lcd, 1, 5);
+							  Lcd_string(&lcd, convertTo24HourFormat(dispense_time));
+						  }
+						  else if(i == 1){
+							  if(dispense_time < 1440) dispense_time += 30;
+							  Lcd_cursor(&lcd, 1, 5);
+							  Lcd_string(&lcd, convertTo24HourFormat(dispense_time));
+						  }
+					  }
+				  }
+				  else{
+					  if(input_state == 0 && i == 2){
+						  input_state++;
+						  Lcd_clear(&lcd);
+						  Lcd_cursor(&lcd, 0, 1);
+						  Lcd_string(&lcd, "Dispense time:");
+						  Lcd_cursor(&lcd, 1, 5);
+						  Lcd_string(&lcd, convertTo24HourFormat(dispense_time));
+					  }
+				  }
+				  buttons[i].state = GPIO_PIN_SET;
+			  }
+		  }
+	  }
+	  /*
 	  if((HAL_GPIO_ReadPin(Rightmost_Button_GPIO_Port, Rightmost_Button_Pin) == GPIO_PIN_RESET) ||
 			  (HAL_GPIO_ReadPin(Right_Button_GPIO_Port, Right_Button_Pin) == GPIO_PIN_RESET) ||
 			  (HAL_GPIO_ReadPin(Left_Button_GPIO_Port, Left_Button_Pin) == GPIO_PIN_RESET)){
@@ -114,6 +212,7 @@ int main(void)
 		  //HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
 		  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 	  }
+	  */
   }
   /* USER CODE END 3 */
 }
