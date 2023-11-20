@@ -62,6 +62,17 @@ struct Button {
 	int state;
 };
 
+struct Motor {
+	GPIO_TypeDef* IN1_PORT;
+	GPIO_TypeDef* IN2_PORT;
+	GPIO_TypeDef* IN3_PORT;
+	GPIO_TypeDef* IN4_PORT;
+	uint16_t IN1_PIN;
+	uint16_t IN2_PIN;
+	uint16_t IN3_PIN;
+	uint16_t IN4_PIN;
+};
+
 // Function to convert minutes to 24-hour time format and return as a string
 char* convertTo24HourFormat(int minutes) {
     int hours = minutes / 60;
@@ -80,6 +91,107 @@ char* convertTo24HourFormat(int minutes) {
     sprintf(result, "%02d:%02d", hours, mins);
 
     return result;
+}
+
+void microDelay (uint16_t delay)
+{
+  __HAL_TIM_SET_COUNTER(&htim2, 0);
+  while (__HAL_TIM_GET_COUNTER(&htim2) < delay);
+}
+
+void stepCCV (int steps, uint16_t delay, struct Motor m) // CCV - Counter Clockwise
+{
+  for(int x=0; x<steps; x=x+1)
+  {
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_SET);   // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_RESET); // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_RESET); // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_RESET); // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_SET);   // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_SET);   // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_RESET); // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_RESET); // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_RESET); // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_SET);   // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_RESET); // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_RESET); // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_RESET); // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_SET);   // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_SET);   // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_RESET); // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_RESET); // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_RESET); // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_SET);   // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_RESET); // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_RESET); // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_RESET); // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_SET);   // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_SET);   // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_RESET); // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_RESET); // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_RESET); // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_SET);   // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_SET);   // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_RESET); // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_RESET); // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_SET);   // IN4
+	  microDelay(delay);
+  }
+}
+
+void stepCV (int steps, uint16_t delay, struct Motor m) // CV - Clockwise
+{
+  for(int x=0; x<steps; x=x+1)
+  {
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_SET);   // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_RESET); // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_RESET); // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_SET);   // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_RESET); // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_RESET); // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_RESET); // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_SET);   // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_RESET); // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_RESET); // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_SET);   // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_SET);   // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_RESET); // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_RESET); // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_SET);   // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_RESET); // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_RESET); // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_SET);   // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_SET);   // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_RESET); // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_RESET); // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_SET);   // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_RESET); // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_RESET); // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_SET);   // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_SET);   // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_RESET); // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_RESET); // IN4
+	  microDelay(delay);
+	  HAL_GPIO_WritePin(m.IN1_PORT, m.IN1_PIN, GPIO_PIN_SET);   // IN1
+	  HAL_GPIO_WritePin(m.IN2_PORT, m.IN2_PIN, GPIO_PIN_RESET); // IN2
+	  HAL_GPIO_WritePin(m.IN3_PORT, m.IN3_PIN, GPIO_PIN_RESET); // IN3
+	  HAL_GPIO_WritePin(m.IN4_PORT, m.IN4_PIN, GPIO_PIN_RESET); // IN4
+	  microDelay(delay);
+
+  }
 }
 
 /* USER CODE END 0 */
@@ -114,6 +226,25 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+  HAL_TIM_Base_Start(&htim2);
+
+  struct Motor m1, m2;
+  m1.IN1_PIN = GPIO_PIN_0;
+  m1.IN1_PORT = GPIOA;
+  m1.IN2_PIN = GPIO_PIN_1;
+  m1.IN2_PORT = GPIOA;
+  m1.IN3_PIN = GPIO_PIN_4;
+  m1.IN3_PORT = GPIOA;
+  m1.IN4_PIN = GPIO_PIN_0;
+  m1.IN4_PORT = GPIOB;
+  m2.IN1_PIN = GPIO_PIN_8;
+  m2.IN1_PORT = GPIOB;
+  m2.IN2_PIN = GPIO_PIN_9;
+  m2.IN2_PORT = GPIOB;
+  m2.IN3_PIN = GPIO_PIN_6;
+  m2.IN3_PORT = GPIOA;
+  m2.IN4_PIN = GPIO_PIN_7;
+  m2.IN4_PORT = GPIOA;
   unsigned int pill_count = 0;
   unsigned int dispense_time = 0;
   unsigned int input_state = 0;
@@ -148,6 +279,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
 	  for (int i = 0; i < 3; i++){
 		  if(HAL_GPIO_ReadPin(buttons[i].port, buttons[i].pin) == GPIO_PIN_RESET){
 			  if(buttons[i].state == GPIO_PIN_SET){
@@ -172,6 +304,15 @@ int main(void)
 							  if(pill_count < 10) pill_count++;
 							  Lcd_cursor(&lcd, 1, 7);
 							  Lcd_int(&lcd, pill_count);
+						  }
+						  else{
+							  for(int i = 0; i < pill_count; i++){
+								  stepCCV(256, 1000, m1);  // 256 half revolution
+								  stepCCV(256, 1000, m2);
+								  HAL_Delay(100);
+								  stepCV(256, 1000, m2);
+								  stepCV(256, 1000, m1);
+							  }
 						  }
 					  }
 					  else if(input_state == 1){
